@@ -1,11 +1,20 @@
-from flask import Flask
+import os
+from app import create_app
+from flask.cli import FlaskGroup
 
-app = Flask(__name__)
-
-@app.route('/')
-def home():
-    return "Flask is running!"
+app = create_app()
+cli = FlaskGroup(app)
 
 if __name__ == '__main__':
-    print("Starting Flask server...")
-    app.run(debug=True)
+    # Get port from environment or use default
+    port = int(os.environ.get('PORT', 5000))
+    
+    # Set host to 0.0.0.0 to make it accessible from outside the container
+    # in production, you should set up a reverse proxy with proper security
+    host = os.environ.get('HOST', '0.0.0.0')
+    
+    # Debug mode should be disabled in production
+    debug = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
+    
+    print(f"Starting application on {host}:{port} (debug={debug})")
+    app.run(host=host, port=port, debug=debug)

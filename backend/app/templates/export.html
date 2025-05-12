@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IP Check Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .timestamp {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .ip-card {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .ip-header {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .danger .ip-header {
+            background-color: #e74c3c;
+        }
+        .warning .ip-header {
+            background-color: #f39c12;
+        }
+        .safe .ip-header {
+            background-color: #2ecc71;
+        }
+        .ip-body {
+            padding: 15px;
+            background-color: #f9f9f9;
+        }
+        .ip-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 10px;
+        }
+        .detail-item {
+            margin-bottom: 5px;
+        }
+        .detail-label {
+            font-weight: bold;
+            margin-right: 4px;
+        }
+        .ip-reports {
+            margin-top: 15px;
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 3px;
+            border: 1px solid #ddd;
+        }
+        .comment {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #f1f1f1;
+            border-radius: 3px;
+        }
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+            color: #666;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+        @media print {
+            body {
+                background-color: white;
+                color: black;
+            }
+            .container {
+                box-shadow: none;
+                border: none;
+            }
+            .ip-card {
+                break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>IP Address Check Report</h1>
+            <div class="timestamp">Generated on {{ generated_at }}</div>
+        </div>
+        
+        {% for result in results %}
+        {% set score = result.abuseConfidenceScore|default(0)|int %}
+        <div class="ip-card {% if score > 75 %}danger{% elif score > 30 %}warning{% else %}safe{% endif %}">
+            <div class="ip-header">
+                <div>{{ result.ipAddress }}</div>
+                <div>Abuse Score: {{ score }}%</div>
+            </div>
+            <div class="ip-body">
+                <div class="ip-details">
+                    <div class="detail-item">
+                        <span class="detail-label">Country:</span> 
+                        {% if result.countryName %}{{ result.countryName }}{% else %}Unknown{% endif %}
+                        {% if result.countryCode %} ({{ result.countryCode }}){% endif %}
+                    </div>
+                    
+                    <div class="detail-item">
+                        <span class="detail-label">ISP:</span> 
+                        {% if result.isp %}{{ result.isp }}{% else %}Unknown{% endif %}
+                    </div>
+                    
+                    <div class="detail-item">
+                        <span class="detail-label">Domain:</span> 
+                        {% if result.domain %}{{ result.domain }}{% else %}None{% endif %}
+                    </div>
+                    
+                    <div class="detail-item">
+                        <span class="detail-label">Usage Type:</span> 
+                        {% if result.usageType %}{{ result.usageType }}{% else %}Unknown{% endif %}
+                    </div>
+                    
+                    <div class="detail-item">
+                        <span class="detail-label">Hostnames:</span> 
+                        {% if result.hostnames and result.hostnames|length > 0 %}
+                            {{ result.hostnames|join(', ') if result.hostnames is iterable and result.hostnames is not string else result.hostnames }}
+                        {% else %}
+                            None
+                        {% endif %}
+                    </div>
+                    
+                    <div class="detail-item">
+                        <span class="detail-label">Tor Exit Node:</span> 
+                        {% if result.isTor == true %}Yes{% elif result.isTor == false %}No{% else %}Unknown{% endif %}
+                    </div>
+                    
+                    <div class="detail-item">
+                        <span class="detail-label">Public IP:</span> 
+                        {% if result.isPublic == true %}Yes{% elif result.isPublic == false %}No{% else %}Unknown{% endif %}
+                    </div>
+                    
+                    <div class="detail-item">
+                        <span class="detail-label">Whitelisted:</span> 
+                        {% if result.isWhitelisted == true %}Yes{% elif result.isWhitelisted == false %}No{% else %}Unknown{% endif %}
+                    </div>
+                    
+                    <div class="detail-item">
+                        <span class="detail-label">Total Reports:</span> 
+                        {{ result.totalReports|default(0) }}
+                    </div>
+                    
+                    <div class="detail-item">
+                        <span class="detail-label">Last Reported:</span> 
+                        {% if result.lastReportedAt %}{{ result.lastReportedAt }}{% else %}Never{% endif %}
+                    </div>
+                </div>
+                
+                {% if result.reports and result.reports|length > 0 %}
+                <div class="ip-reports">
+                    <h3>Recent Reports ({{ result.reports|length }})</h3>
+                    {% for report in result.reports %}
+                    {% if loop.index <= 10 %}
+                    <div class="comment">
+                        <div class="comment-header">
+                            <div>{{ report.reporterCountryName|default('Unknown') }} {% if report.reporterCountryCode %}({{ report.reporterCountryCode }}){% endif %}</div>
+                            <div>{{ report.reportedAt|default('Unknown date') }}</div>
+                        </div>
+                        <div class="comment-body">
+                            {{ report.comment|default('No comment provided') }}
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                    
+                    {% if result.reports|length > 10 %}
+                    <div class="more-comments">
+                        <em>...and {{ result.reports|length - 10 }} more reports</em>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+        
+        <div class="footer">
+            <p>This report was generated using AbuseIPDB API. For more information, visit <a href="https://www.abuseipdb.com">AbuseIPDB.com</a></p>
+        </div>
+    </div>
+</body>
+</html>

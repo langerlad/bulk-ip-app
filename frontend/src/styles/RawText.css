@@ -1,0 +1,53 @@
+.raw-text-container {
+    padding: 2rem;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .raw-text-header {
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+  
+  .raw-text-header h1 {
+    margin-bottom: 0.5rem;
+  }
+  
+  .raw-text-content {
+    background-color: #f5f5f5;
+    padding: 1.5rem;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    margin-bottom: 2rem;
+    overflow-x: auto;
+  }
+  
+  .raw-text-content pre {
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+  }
+  
+  .raw-text-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+  }
+  
+  /* Print styles */
+  @media print {
+    .raw-text-actions {
+      display: none;
+    }
+    
+    .raw-text-header {
+      margin-bottom: 1rem;
+    }
+    
+    .raw-text-content {
+      border: none;
+      padding: 0;
+      background-color: white;
+    }
+  }
