@@ -1,6 +1,6 @@
 import React from 'react';
 import '../styles/ApiStatus.css';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 
 const ApiStatus = ({ apiStatus, clientIp }) => {
   // Format the reset time
@@ -8,7 +8,8 @@ const ApiStatus = ({ apiStatus, clientIp }) => {
     if (!resetTimeString) return 'Unknown';
     
     try {
-      const resetDate = new Date(resetTimeString);
+      // Parse the UTC time and format to local time
+      const resetDate = parseISO(resetTimeString);
       return format(resetDate, 'yyyy-MM-dd HH:mm:ss');
     } catch (error) {
       console.error('Error parsing reset time:', error);
@@ -35,15 +36,16 @@ const ApiStatus = ({ apiStatus, clientIp }) => {
   return (
     <div className="api-status-container">
       <div className="api-info">
+        <h3>AbuseIPDB API Usage</h3>
         <div className={`api-remaining ${getStatusClass(remaining)}`}>
-          <span className="status-label">API Requests:</span> 
+          <span className="status-label">Requests:</span> 
           <span className="status-value">{remaining}/{totalLimit} remaining today</span>
         </div>
         
         {apiStatus?.next_reset && (
           <div className="api-reset">
             <span className="status-label">Resets at:</span> 
-            <span className="status-value">{formatResetTime(apiStatus.next_reset)} UTC</span>
+            <span className="status-value">{formatResetTime(apiStatus.next_reset)} (local time)</span>
           </div>
         )}
       </div>

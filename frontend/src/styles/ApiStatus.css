@@ -1,54 +1,85 @@
 .api-status-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.75rem 1rem;
-    background-color: #f5f5f5;
-    border-radius: 4px;
-    margin-top: 0.5rem;
-    margin-bottom: 1rem;
-    font-size: 0.95rem;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  border: 1px solid #dee2e6;
+}
+
+.api-info {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.api-info h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #495057;
+}
+
+.status-label {
+  font-weight: 600;
+  color: #555;
+  margin-right: 0.25rem;
+}
+
+.api-remaining {
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.api-remaining.good {
+  background-color: #e1f5e1;
+  color: #2ecc71;
+}
+
+.api-remaining.warning {
+  background-color: #fef2e0;
+  color: #f39c12;
+}
+
+.api-remaining.danger {
+  background-color: #fde7e7;
+  color: #e74c3c;
+}
+
+.api-reset {
+  color: #6c757d;
+}
+
+.client-ip {
+  font-family: monospace;
+  padding: 0.25rem 0.75rem;
+  background-color: #eee;
+  border-radius: 4px;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 768px) {
+  .api-status-container {
+    flex-direction: column;
+    align-items: flex-start;
   }
   
   .api-info {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-  }
-  
-  .status-label {
-    font-weight: 600;
-    color: #555;
-    margin-right: 0.25rem;
-  }
-  
-  .api-remaining {
-    padding: 0.25rem 0.5rem;
-    border-radius: 3px;
-    font-weight: 500;
-  }
-  
-  .api-remaining.good {
-    background-color: #e1f5e1;
-    color: #2ecc71;
-  }
-  
-  .api-remaining.warning {
-    background-color: #fef2e0;
-    color: #f39c12;
-  }
-  
-  .api-remaining.danger {
-    background-color: #fde7e7;
-    color: #e74c3c;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    width: 100%;
   }
   
   .client-ip {
-    font-family: monospace;
-    padding: 0.25rem 0.5rem;
-    background-color: #eee;
-    border-radius: 3px;
+    align-self: flex-start;
   }
+}

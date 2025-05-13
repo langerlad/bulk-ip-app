@@ -123,16 +123,6 @@ const IPFormPage = () => {
   
   return (
     <div className="container">
-      {apiStatus && (
-      <div className="api-usage-banner">
-        <h3>AbuseIPDB API Usage</h3>
-        <div className="usage-info">
-          <p><strong>Remaining Requests:</strong> {apiStatus.remaining_requests} out of 1000</p>
-          <p><strong>Reset Time:</strong> {new Date(apiStatus.next_reset).toLocaleString()}</p>
-        </div>
-      </div>
-      )}
-
       <ApiStatus apiStatus={apiStatus} clientIp={clientIp} />
       
       {loading ? (
