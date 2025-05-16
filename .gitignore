@@ -42,3 +42,7 @@ yarn-error.log*
 .vscode/
 *.swp
 *.swo
+
+#API
+/backend//app/.env
+/frontend/.env

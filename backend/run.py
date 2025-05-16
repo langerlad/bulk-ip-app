@@ -16,5 +16,4 @@ if __name__ == '__main__':
     # Debug mode should be disabled in production
     debug = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
     
-    print(f"Starting application on {host}:{port} (debug={debug})")
     app.run(host=host, port=port, debug=debug)

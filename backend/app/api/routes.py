@@ -9,6 +9,7 @@ from app.models.models import ApiUsage, ExportFile
 from app.services.ip_service import IPService
 from app.services.export_service import ExportService
 from app.utils.validators import validate_api_key, is_ip_allowed
+from app.services.ripe_service import RIPEStatService
 
 # Create blueprint
 api_bp = Blueprint('api', __name__)
@@ -79,10 +80,11 @@ def init():
         'client_ip': client_ip
     })
 
+
 @api_bp.route('/check', methods=['POST'])
 @limiter.limit("5/minute")
 def check_ips():
-    """Check IP addresses against AbuseIPDB"""
+    """Check IP addresses against AbuseIPDB and RIPE Stat"""
     data = request.json
     client_ip = get_client_ip()
     client_ip_hash = hash_ip(client_ip)
@@ -108,6 +110,8 @@ def check_ips():
     with_csv = data.get('csv', False)
     with_html = data.get('html', False)
     with_comments = data.get('comments', False)
+    # New option for RIPE data
+    with_ripe = data.get('ripe', True)  # Enable by default
     
     try:
         # Run the IP check using asyncio
@@ -116,6 +120,14 @@ def check_ips():
         result = loop.run_until_complete(
             IPService.check_ip_addresses(ip_list['valid'], with_comments)
         )
+        
+        # If RIPE data is requested, enhance the results
+        if with_ripe and 'results' in result:
+            enhanced_results = loop.run_until_complete(
+                IPService.enhance_ip_results(result['results'])
+            )
+            result['results'] = enhanced_results
+            
         loop.close()
         
         # Check for errors
@@ -140,6 +152,7 @@ def check_ips():
             'csv': with_csv,
             'html': with_html,
             'comments': with_comments,
+            'ripe': with_ripe,
             'api_usage': result['api_usage'],
             'client_ip': client_ip,
             'stats': {

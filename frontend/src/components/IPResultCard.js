@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import '../styles/IPResultCard.css';
 import { formatDistanceToNow, parseISO } from 'date-fns';
+import RIPENetworkInfo from './RIPENetworkInfo';
 
 const IPResultCard = ({ result, showComments }) => {
   const [commentsVisible, setCommentsVisible] = useState(false);
@@ -68,6 +69,13 @@ const IPResultCard = ({ result, showComments }) => {
           {result.isTor && <span className="status-tag tor">Tor Exit Node</span>}
           {result.isPublic === false && <span className="status-tag private">Private IP</span>}
           {result.isWhitelisted && <span className="status-tag whitelisted">Whitelisted</span>}
+          
+          {/* Add RIPE network information tag if available */}
+          {result.ripe && result.ripe.asn && (
+            <span className="status-tag network">
+              AS{result.ripe.asn}
+            </span>
+          )}
         </div>
         
         <div className="ip-details">
@@ -94,6 +102,23 @@ const IPResultCard = ({ result, showComments }) => {
               {formatProperty(result.usageType)}
             </div>
           </div>
+          
+          {/* Add network holder from RIPE if available */}
+          {result.ripe && result.ripe.holder && (
+            <div className="detail-row">
+              <div className="detail-item">
+                <span className="detail-label">Network Holder: </span> 
+                {formatProperty(result.ripe.holder)}
+              </div>
+              
+              {result.ripe.prefix && (
+                <div className="detail-item">
+                  <span className="detail-label">Network: </span> 
+                  {formatProperty(result.ripe.prefix)}
+                </div>
+              )}
+            </div>
+          )}
           
           <div className="detail-row">
             <div className="detail-item">
@@ -125,6 +150,9 @@ const IPResultCard = ({ result, showComments }) => {
             )}
           </div>
         </div>
+        
+        {/* Full RIPE Network Information section */}
+        {result.ripe && <RIPENetworkInfo ripeData={result.ripe} />}
         
         {showComments && commentsVisible && result.reports && result.reports.length > 0 && (
           <div className="comments-section">

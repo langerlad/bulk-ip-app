@@ -11,7 +11,8 @@ const IPFormPage = () => {
     ips: '',
     csv: false,
     html: false,
-    comments: false
+    comments: false,
+    ripe: true  // Enable RIPE data by default
   });
   
   const [loading, setLoading] = useState(false);
@@ -186,6 +187,18 @@ const IPFormPage = () => {
                     onChange={handleChange}
                   />
                   <label htmlFor="comments">Include report comments</label>
+                </div>
+                
+                {/* New option for RIPE data */}
+                <div className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    name="ripe"
+                    id="ripe"
+                    checked={formData.ripe}
+                    onChange={handleChange}
+                  />
+                  <label htmlFor="ripe">Include RIPE network data</label>
                 </div>
               </div>
             </div>

@@ -6,6 +6,7 @@ from datetime import datetime, timezone, timedelta
 from flask import current_app
 from app import db
 from app.models.models import ApiUsage, IPCheckResult
+from app.services.ripe_service import RIPEStatService
 
 class IPService:
     """Service for handling IP address operations and AbuseIPDB API interactions"""
@@ -132,3 +133,84 @@ class IPService:
             "total_ips": len(ip_list),
             "api_usage": api_usage.to_dict() if api_usage else None
         }
+   
+    async def enhance_ip_results(ip_results, session=None):
+        """
+        Enhance IP results with RIPE Stat data
+        
+        Args:
+            ip_results: List of IP results from AbuseIPDB
+            session: Optional aiohttp session
+            
+        Returns:
+            Enhanced results with RIPE data
+        """
+        if not session:
+            session = aiohttp.ClientSession()
+            should_close = True
+        else:
+            should_close = False
+            
+        try:
+            # Create tasks for each IP
+            tasks = []
+            for ip_result in ip_results:
+                if 'ipAddress' in ip_result and not 'error' in ip_result:
+                    task = RIPEStatService.check_ip_ripe_data(ip_result['ipAddress'], session)
+                    tasks.append(task)
+                else:
+                    tasks.append(None)
+            
+            # Execute all tasks that are not None
+            ripe_results = await asyncio.gather(*[t for t in tasks if t is not None])
+            
+            # Merge results
+            result_index = 0
+            for i, ip_result in enumerate(ip_results):
+                if tasks[i] is not None:
+                    ripe_data = ripe_results[result_index]
+                    result_index += 1
+                    
+                    # Get the ASN from the asns array (first entry if available)
+                    asn = ''
+                    network_info = ripe_data.get('network_info', {})
+                    if isinstance(network_info, dict) and 'asns' in network_info and isinstance(network_info['asns'], list) and network_info['asns']:
+                        asn = network_info['asns'][0]
+                    
+                    # Get holder information
+                    holder_info = ripe_data.get('holder', {})
+                    if not isinstance(holder_info, dict):
+                        holder_info = {}
+                    
+                    # Get abuse contacts
+                    abuse_contacts = []
+                    if isinstance(ripe_data.get('abuse_contacts', {}), dict):
+                        abuse_contacts = ripe_data['abuse_contacts'].get('abuse_contacts', [])
+                    
+                    # Add RIPE data to the result
+                    ip_result['ripe'] = {
+                        'prefix': network_info.get('prefix', '') if isinstance(network_info, dict) else '',
+                        'asn': asn,
+                        'holder': holder_info.get('name', ''),
+                        'netname': holder_info.get('netname', ''),
+                        'country': holder_info.get('country', ''),
+                        'registrar': holder_info.get('registrar', ''),
+                        'registry': holder_info.get('registry', ''),
+                        'ip_range': holder_info.get('ip_range', ''),
+                        'cidr': holder_info.get('cidr', ''),
+                        'reg_date': holder_info.get('reg_date', ''),
+                        'tech_contacts': holder_info.get('tech_contacts', []),
+                        'abuse_policy_url': holder_info.get('abuse_policy_url', ''),
+                        'rpki_status': holder_info.get('rpki_status', ''),
+                        'abuse_contacts': abuse_contacts if isinstance(abuse_contacts, list) else []
+                    }
+                    
+                    # Add additional abuse contacts if available
+                    if 'abuse_contacts' in ripe_data.get('abuse_contacts', {}):
+                        ip_result['additional_abuse_contacts'] = ripe_data['abuse_contacts']['abuse_contacts']
+            
+            return ip_results
+            
+        finally:
+            if should_close:
+                await session.close()
